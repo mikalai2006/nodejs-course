@@ -17,7 +17,7 @@ const getUser = async (id, callback) => {
 
 const createUser = async (data, callback) => {
   const newUser = await (await Apps).addItem('users', data);
-  console.log('create user > ', newUser);
+  // console.log('create user > ', newUser);
   // validate data for newUser
   if (newUser) {
     return callback(null, newUser);

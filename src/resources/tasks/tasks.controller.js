@@ -1,45 +1,35 @@
-const boardsService = require('./tasks.service');
+const tasksService = require('./tasks.service');
 const { $text } = require('../../common/locale');
 
-exports.createBoard = (req, res) => {
-  const data = req.body;
+exports.createTask = (req, res) => {
+  let data = req.body;
+  data = { ...data, ...req.params };
   if (!data.title) {
     res.status(400).send($text('ber404'));
   }
-  boardsService.createBoard(data, (err, newUser) => {
+  tasksService.createTask(data, (err, newTask) => {
     if (err) {
       res.json({
         error: err
       });
     }
-    res.json(newUser);
+    res.json(newTask);
   });
-};
-exports.getBoard = async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    res.status(404).send($text('ber404'));
-    return;
-  }
-  await boardsService.getBoard(req.params.id, (error, response) => {
-    if (response) {
-      res.status(200).json(response);
-    } else if (error) {
-      res.status(404).json(error);
-    }
-  });
-  // res.json(user);
 };
 
 exports.getAllTasks = async (req, res) => {
-  const items = await boardsService.getAllTasks();
-  res.json(items);
+  const { boardId, taskId } = req.params;
+  const items = await tasksService.getTasks(boardId, taskId);
+  if (!items) {
+    res.status(404).json('error');
+  } else {
+    res.status(200).send(items);
+  }
 };
 
-exports.removeBoard = (req, res) => {
-  const { id } = req.params;
-  boardsService.removeBoard(id, (err, response) => {
+exports.removeTask = (req, res) => {
+  const { taskId } = req.params;
+  tasksService.removeTask(taskId, (err, response) => {
     if (err) {
       res.status(404).json(err);
     } else {
@@ -48,14 +38,15 @@ exports.removeBoard = (req, res) => {
   });
 };
 
-exports.updateBoard = (req, res) => {
+exports.updateTask = (req, res) => {
   const body = req.body;
-  const { id } = req.params;
+  const { boardId, taskId } = req.params;
   const data = {
     ...body,
-    id
+    boardId,
+    taskId
   };
-  boardsService.updateBoard(data, (err, response) => {
+  tasksService.updateTask(data, (err, response) => {
     if (err) {
       res.status(400).json(err);
     } else {

@@ -1,7 +1,9 @@
 const usersRepo = require('./users/user.memory.repository');
 const boardsRepo = require('./boards/boards.memory.repository');
+const tasksRepo = require('./tasks/tasks.memory.repository');
 const User = require('./users/user.model');
 const Boards = require('./boards/boards.model');
+const Tasks = require('./tasks/tasks.model');
 const { $text } = require('../common/locale');
 
 const AppData = class {
@@ -24,6 +26,14 @@ const AppData = class {
     }
     return items;
   }
+  getTasks(idBoard, taskId = false) {
+    const allTasks = this.tasks.filter(x => x.boardId === idBoard);
+    let items = allTasks.length > 0 ? allTasks : [];
+    if (taskId) {
+      items = allTasks.find(x => x.id === taskId);
+    }
+    return items;
+  }
   addItem(type, data) {
     let newItems;
     let items;
@@ -38,6 +48,11 @@ const AppData = class {
         this[type].push(items);
         newItems = Boards.toResponse(items);
         break;
+      case 'tasks':
+        items = new Tasks(data);
+        this[type].push(items);
+        newItems = Tasks.toResponse(items);
+        break;
       default:
         break;
     }
@@ -49,9 +64,33 @@ const AppData = class {
       return;
     }
     this[type].splice(removeItem.indexItem, 1);
+
+    if (type === 'users') {
+      const allUserTasks = this.tasks.filter(
+        x => x.userId === removeItem.item.id
+      );
+      allUserTasks.forEach(element => {
+        element.userId = null;
+        this.updateTask(element.boardId, element);
+      });
+    }
+
+    if (type === 'boards') {
+      this.removeTask(removeItem.item.id);
+    }
+
     return $text('deluser204');
   }
+  removeTask(boardId) {
+    if (!boardId) {
+      return;
+    }
+    const newTasks = this.tasks.filter(x => x.boardId !== boardId);
 
+    this.tasks = newTasks;
+
+    return $text('deluser204');
+  }
   updateItem(type, data) {
     const { id } = data;
     if (!id) {
@@ -68,6 +107,21 @@ const AppData = class {
       data
     );
     return this[type][updateItem.indexItem];
+  }
+
+  updateTask(data) {
+    const { boardId, taskId } = data;
+    if (!boardId || !taskId) {
+      return;
+    }
+    const index = this.tasks.findIndex(
+      x => x.id === taskId && x.boardId === boardId
+    );
+    if (!index) {
+      return;
+    }
+    this.tasks[index] = new Tasks(data);
+    return this.tasks[index];
   }
 
   findItem(type, id) {
@@ -92,11 +146,17 @@ const AppData = class {
       })
       .catch(err => console.log(err));
     this.boards = boards;
+    const tasks = await tasksRepo
+      .getAll()
+      .then(data => {
+        return data;
+      })
+      .catch(err => console.log(err));
+    this.tasks = tasks;
     return this;
   }
 };
 const Apps = new AppData().create().then(x => {
-  console.log(x);
   return x;
 });
 

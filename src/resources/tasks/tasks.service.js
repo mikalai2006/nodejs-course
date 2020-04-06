@@ -1,43 +1,33 @@
 const { $text } = require('../../common/locale');
 const { Apps } = require('../app');
 
-const getAll = async () => {
-  const output = await (await Apps).getItems('boards');
+const getTasks = async (boardId, taskId) => {
+  const output = await (await Apps).getTasks(boardId, taskId);
   return output;
 };
 
-const getBoard = async (id, callback) => {
-  const allBoard = await getAll('boards');
-  const board = allBoard.find(x => x.id === id);
-  if (board) {
-    return callback(null, board);
-  }
-  return callback($text('ber404'), null);
-};
-
-const createBoard = async (data, callback) => {
-  const newBoard = await (await Apps).addItem('boards', data);
-  // console.log('create board > ', newBoard);
-  if (newBoard) {
-    return callback(null, newBoard);
+const createTask = async (data, callback) => {
+  const newTask = await (await Apps).addItem('tasks', data);
+  if (newTask) {
+    return callback(null, newTask);
   }
   return callback($text('er400'), null);
 };
 
-const removeBoard = async (id, callback) => {
-  const msg = await (await Apps).removeItem('boards', id);
+const removeTask = async (id, callback) => {
+  const msg = await (await Apps).removeItem('tasks', id);
   if (msg) {
     return callback(null, msg);
   }
   return callback($text('ber404'), null);
 };
 
-const updateBoard = async (data, callback) => {
-  const msg = await (await Apps).updateItem('boards', data);
+const updateTask = async (data, callback) => {
+  const msg = await (await Apps).updateTask(data);
   if (msg) {
     return callback(null, msg);
   }
   return callback($text('er400'), null);
 };
 
-module.exports = { getAll, getBoard, createBoard, removeBoard, updateBoard };
+module.exports = { getTasks, createTask, removeTask, updateTask };

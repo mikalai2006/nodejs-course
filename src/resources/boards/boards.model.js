@@ -9,16 +9,14 @@ class Columns {
 }
 
 class Boards {
-  constructor({ id = uuid(), title = 'Board' } = {}) {
+  constructor({ id = uuid(), title = 'Board', columns = new Columns() } = {}) {
     this.id = id;
     this.title = title;
-    this.columns = new Columns();
+    this.columns = columns;
   }
 
   static toResponse(board) {
     const { id, title, columns } = board;
-    // work with other property
-    // ...
     return { id, title, columns };
   }
 }
