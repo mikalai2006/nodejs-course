@@ -15,6 +15,8 @@ class User {
 
   static toResponse(user) {
     const { id, name, login } = user;
+    // work with other property
+    // ...
     return { id, name, login };
   }
 }
