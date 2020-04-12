@@ -34,6 +34,9 @@ exports.getOneUser = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   const users = await usersService.getAll();
+  /* setTimeout(() => {
+    throw new Error('oops')
+  }) */
   res.json(users);
 };
 
